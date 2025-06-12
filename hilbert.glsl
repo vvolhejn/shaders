@@ -41,7 +41,7 @@ void main() {
 
     float progress = getProgress(uv, 7);
     float highlight1 = cos(u_time * 1. + progress * 100.);
-    float highlight2 = sin(u_time * sqrt(1./5.) - progress * 100.);
+    float highlight2 = sin(u_time * sqrt(1./5.) + progress * 90.);
 
     vec3 color = vec3((highlight1 - 0.9) * 7., (highlight2 - 0.9) * 7., 0.1);
 
