@@ -41,18 +41,29 @@ float getProgress(vec2 uv, int level) {
 }
 
 void main() {
+    float periodicTime = fract(u_time * .2);
+    // periodicTime = 0.;
+
+    float zoom = pow(2., periodicTime);
     vec2 uv = (gl_FragCoord.xy / u_resolution.xy - 0.5) * 2.;
 
+    uv = vec2((uv.x + 1.) / zoom - 1., (uv.y - 1.) / zoom + 1.);
+    
     float progress = getProgress(uv, 7);
+    
+    // "snake" animation
+    // progress = fract(progress + periodicTime);
+    
+    // color periodically (doesn't play nice with zoom)
+    // progress = (sin(progress * 3.14159 * 2. + u_time * 0.3) + 1.) / 2.;
+
+    progress -= 0.25 * periodicTime;
+    progress *= pow(4., periodicTime);
+
     float highlight1 = cos(u_time * 1. + progress * 100.);
     float highlight2 = sin(u_time * sqrt(1./5.) + progress * 90.);
 
-    vec3 color = vec3(0.1,0.1,0.13);
-
-    // vec3 color = vec3((highlight1 - 0.9) * 7., (highlight2 - 0.9) * 7., 0.1);
-
-    color = mix(color, vec3(0.8,0.6,0.1), clamp((highlight1 - 0.9) * 7., 0., 1.));
-    color = mix(color, vec3(0.6,.2,0.8), clamp((highlight2 - 0.9) * 7., 0., 1.));
+    vec3 color = mix(vec3(0.8,0.6,0.1), vec3(0.6,.2,0.8), progress);
 
     color += rand(uv) * 0.03;
 
