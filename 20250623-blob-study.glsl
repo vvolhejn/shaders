@@ -60,39 +60,38 @@ mat3 rotation(float a1, float a2, float a3) {
   return euler1(a1) * euler2(a2) * euler3(a3);
 }
 
+const float Z_SCALE = 0.0;
+
+float circleSdf(vec3 uv3, vec3 initialPosition, float a1, float a2, float a3) {
+  vec3 pos = initialPosition * rotation(a1, a2, a3);
+  pos.z *= Z_SCALE;
+
+  // return distance(pos, uv3);
+  return logdist(pos, uv3);
+}
+
 void main() {
   float time = iGlobalTime * 1.0;
   vec2 uv = (gl_FragCoord.xy / iResolution.xy) * 2. - 1.;
-  float zScale = 0.1;
-  vec3 uv3 = vec3(uv, zScale);
+  vec3 uv3 = vec3(uv, Z_SCALE);
 
   float noise = smoothstep(0.99, 1.0, rand2(uv));
 
-  vec3 c1 = vec3(0.7, 0.0, 0.) * rotation(1. + time * 0.75, .7, 0.5);
-  vec3 c2 = vec3(0.0, 0.7, 0.) * rotation(time * 1.5, 0.05, .7);
-  c1.z *= zScale;
-  c2.z *= zScale;
+  float d1 = circleSdf(uv3, vec3(1.3, 0.0, 0.), time * 0.75, 1., 0.5);
+  float d2 = circleSdf(uv3, vec3(0.0, 0.7, 0.), -time * 1.23, 0.3, 0.7);
+  float d3 = circleSdf(uv3, vec3(-0.5, -0.5, 0.), -time * 1.0, 0.0, 1.5);
 
-  // float d1 =  distance(c1, uv3);
-  // float d2 = distance(c2, uv3);
-  float d1 = logdist(c1, uv3);
-  float d2 = logdist(c2, uv3);
-
-  float sdf = logdist(c1, uv3) + logdist(c2, uv3);
-  float thresh = 0.85;
-
-  // float sdf = min(d1, d2);
+  // Simple circles for debugging:
+  // float sdf = min(d1, min(d2, d3));
   // float thresh = 0.2;
 
-  // float thresh = mix(0.1, .8, (sin(time * 1.) + 1.) * .5);
-  // vec3 color = vec3(step(thresh, sdf));
-  // color -= noise * 0.2;
-  // color += noise2 * 0.2;
+  float sdf = d1 + d2 + d3;
+  float thresh = 1.5;
+
   vec3 background = vec3(1.0, 0.8, 0.8) - noise;
   vec3 foreground = vec3(0.) + noise * vec3(0.8, 0.8, 1.0);
 
   vec3 color = sdf < thresh ? foreground : background;
-  // vec3 color = vec3(sdf);
 
   gl_FragColor = vec4(color, 1.0);
 }
