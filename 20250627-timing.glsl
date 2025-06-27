@@ -37,18 +37,21 @@ void main() {
   uv = fract(uv * N);
   uv = (uv - 0.5) * 2.;
 
+  float STEPS = 30.;
+  float STEP_SIZE = 0.005;
+  float THRESH = 0.01;
 
-  float phase = time + wavy(time * tile.x) + wavy(time * tile.y);
-  vec2 center = vec2(cos(phase), sin(phase)) * 0.7;
-  float sdf = distance(center, uv) - 0.2;
+  float sdf = 1.0;
 
-  vec3 color = mix(FG, BG, smoothstep(0., 0.1, sdf));
-
-  if (sdf < 0.) {
-    color = FG;
-  } else {
-    color = BG;
+  for (float i = 0.; i < STEPS; i++) {
+    float ctime = time - STEP_SIZE * i;
+    float phase = ctime + wavy(ctime * tile.x) + wavy(ctime * tile.y);
+    vec2 center = vec2(cos(phase), sin(phase)) * 0.7;
+    float csdf = distance(center, uv) - 0.2;
+    sdf = min(sdf, max(csdf, i / STEPS * THRESH));
   }
+
+  vec3 color = mix(FG, BG, smoothstep(0., THRESH, sdf));
 
   // color = vec3(tile[0] * 0.2, tile[1]* 0.2, 0.);
   gl_FragColor = vec4(color, 1.0);

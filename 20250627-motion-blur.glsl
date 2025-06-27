@@ -55,6 +55,5 @@ void main() {
 
   vec3 color = mix(FG, BG, smoothstep(0., THRESH, sdf));
 
-  // color = vec3(tile[0] * 0.2, tile[1]* 0.2, 0.);
   gl_FragColor = vec4(color, 1.0);
 }
